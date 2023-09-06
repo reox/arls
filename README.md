@@ -15,36 +15,57 @@ Please see the in-code comments for details of calls and returns, including exam
 
 Our primary solver is:
 
-    x = arls(A, b)
+```python
+from arls import arls
+x = arls(A, b)
+```
 
 If you need to solve many systems with the same matrix, `A`, but different `b` vectors, use:
 
-    x = arlsusv(A, b, U, S, Vt)[0]
+```python
+from arls import arlsusv
+x = arlsusv(A, b, U, S, Vt)[0]
+```
 
 See details in the code comments for how to get `U`, `S`, `Vt`.
 
 If you need the solution to be constrained to be non-negative, use:
 
-    x = arlsnn(A, b)
+```python
+from arls import arlsnn
+x = arlsnn(A, b)
+```
     
 If you need to add constraint equations which must be satisfied exactly (such as
 "the sum of the solution elements must be 100.0") then put those equation in a 
 separate system, `Ex == f` and call:
 
-    x = arlseq(A, b, E, f)
+```python
+from arls import arlseq
+x = arlseq(A, b, E, f)
+```
 
 If you need to add inequality constraints, such as `x1 + x2 >= 1.0` then 
 put those equations in a separate system, `Gx >= h` and call:
 
-    x = arlsgt(A, b, G, h)
+```python
+from arls import arlsgt
+x = arlsgt(A, b, G, h)
+```
     
 If you need both equality and inequality constraints, use
 
-    x = arlsall(A, b, E, f, G, h) 
+```python
+from arls import arlsall
+x = arlsall(A, b, E, f, G, h) 
+```
 
 You can also constrain the shape of the solution with
 
-    x = arlshape(A, b, nonneg, slope, curve)
+```python
+from arls import arlshape
+x = arlshape(A, b, nonneg, slope, curve)
+```
 
 You can constrain the solution to be 
 
@@ -54,8 +75,10 @@ You can constrain the solution to be
 
 Examples: 
 
-    x = arlshape(A, b, 1, 1, 0) will force x to be nonnegative and rising.
-    x = arlshape(A, b, 0, -1, 1) will force x to be falling and concave up.
+```python
+x = arlshape(A, b, 1, 1, 0)  # will force x to be nonnegative and rising.
+x = arlshape(A, b, 0, -1, 1)  # will force x to be falling and concave up.
+```
 
 See details in the code comments.
     
@@ -65,7 +88,7 @@ See details in the code comments.
 This example is given in the Matlab version of ARLS: [ARLS v2](https://de.mathworks.com/matlabcentral/fileexchange/130259-arls-automatically-regularized-least-squares).
 
 
-```
+```python
 import numpy as np
 import scipy
 from arls import arls
@@ -79,13 +102,12 @@ x = np.arange(order)[::-1]
 
 # Add noise
 np.random.seed(0)
-b = A @ x + 0.0001 * np.random.normal(size=(order, ))
+b = A @ x + np.random.normal(scale=0.0001, size=(order, ))
 
 # Using least squares solver:
 x_ls, _, _, _ = np.linalg.lstsq(A, b, rcond=None)
 # Using arls:
 x_arls = arls(A, b)
-
 ```
 
 ![example.png](example.png)
