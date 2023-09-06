@@ -431,17 +431,6 @@ def arls(A, b):
     Returns
     -------
     x : (n) array_like column vector, type float.
-    nr : int
-        The Numerical Rank of A.
-    ur : int
-        The Minimum Usable Rank.
-        Note that "numerical rank" is an attribute of a matrix
-        but the "usable rank" that arls() computes is an attribute
-        of the problem, Ax=b.
-    sigma : float
-        The estimated right-hand-side root-mean-square error.
-    lambda : float
-        The estimated Tikhonov regularization parameter/
 
     Raises
     ------
@@ -522,7 +511,7 @@ def arls(A, b):
     """
     A = atleast_2d(_asarray_validated(A, check_finite=True))
     U, S, Vt = np.linalg.svd(A, full_matrices=False)
-    return arlsusv(A, b, U, S, Vt)
+    return arlsusv(A, b, U, S, Vt)[0]
 
 
 def find_max_row_norm(A):
@@ -750,7 +739,7 @@ def arlseq(A, b, E, f):
     # final solution
     xe = np.transpose(EE) @ ff
     if AA.shape[0] > 0:
-        xt, _, _, _, _ = arls(AA, bb)
+        xt = arls(AA, bb)
         return xt + xe
     else:
         return xe
@@ -864,7 +853,7 @@ def arlsgt(A, b, G, h):
     ne = 0
 
     # get initial solution... it might actually be right
-    x, nr, ur, sigma, lambdah = arls(A, b)
+    x = arls(A, b)
     nx = mynorm(x)
     if nx <= 0.0:
         return np.zeros(n)
@@ -1076,7 +1065,7 @@ def arlshape(A, b, nonneg, slope, curve):
     ):
         raise LinAlgError("Invalid constraint request in ArlsShape().")
     if nonneg == 0 and slope == 0 and curve == 0:
-        return arls(A, b)[0]
+        return arls(A, b)
 
     # compute the number of rows in G
     m, n = A.shape
