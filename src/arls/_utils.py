@@ -257,3 +257,29 @@ def get_worst(GG, hh, x):
                 p = i
                 worst = diff
     return p
+
+
+def arlspj(A, b, E, f, neglect):
+    # subtract the project of Ax=b onto Ex=f from Ax=b
+    AA = A.copy()
+    bb = b.copy()
+    EE = E.copy()
+    ff = f.copy()
+    ma, na = AA.shape
+    me, ne = EE.shape
+    i = 0
+    while i < ma:
+        for j in range(0, me):
+            d = np.dot(AA[i, :], EE[j, :])
+            AA[i, :] -= d * EE[j, :]
+            bb[i] -= d * ff[j]
+        nm = np.linalg.norm(AA[i, :])
+        if nm < neglect:
+            AA = np.delete(AA, i, 0)
+            bb = np.delete(bb, i, 0)
+            ma, na = AA.shape
+        else:
+            AA[i, :] = AA[i, :] / nm
+            bb[i] = bb[i] / nm
+            i += 1
+    return AA, bb
