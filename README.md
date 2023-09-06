@@ -48,10 +48,9 @@ You can also constrain the shape of the solution with
 
 You can constrain the solution to be 
 
-    1) nonnegative; and/or 
-    2) monotonically non-decreasing (i.e., rising) 
-        or monotonically non-increasing (i.e., falling); and/or 
-    3) concave upward (like `y = x*x`) or concave downward.
+1. nonnegative; and/or 
+2. monotonically non-decreasing (i.e., rising) or monotonically non-increasing (i.e., falling); and/or 
+3. concave upward (like `y = x*x`) or concave downward.
 
 Examples: 
 
