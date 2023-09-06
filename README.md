@@ -112,3 +112,13 @@ x_arls = arls(A, b)
 
 ![example.png](example.png)
 
+
+## Origin of the code and Matlab version
+
+This repository was created from the source code of arls version 1.0.2 published at [pypi.org](https://pypi.org/project/arls/).
+
+Rondall E. Jones published a new version in 2023 for Matlab only at the [Matlab File Exchange](https://de.mathworks.com/matlabcentral/fileexchange/130259-arls-automatically-regularized-least-squares).
+The Matlab version was also presented in a [blog entry by Cleve Moler](https://blogs.mathworks.com/cleve/2023/06/16/arls-automatically-regularized-least-squares/).
+
+There is also some more information on [Rondall E. Jones' website](http://www.rejtrix.net/), for example a copy of his PhD thesis.
+
