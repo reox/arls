@@ -40,7 +40,7 @@ put those equations in a separate system, `Gx >= h` and call:
     
 If you need both equality and inequality constraints, use
 
-    x =arlsall(A, b, E, f, G, h) 
+    x = arlsall(A, b, E, f, G, h) 
 
 You can also constrain the shape of the solution with
 
@@ -60,5 +60,33 @@ Examples:
 See details in the code comments.
     
 
+## Example
 
+This example is given in the Matlab version of ARLS: [ARLS v2](https://de.mathworks.com/matlabcentral/fileexchange/130259-arls-automatically-regularized-least-squares).
+
+
+```
+import numpy as np
+import scipy
+from arls import arls
+
+# Hilbert matrix:
+order = 7
+A = scipy.linalg.hilbert(order)
+
+# ideal solution:
+x = np.arange(order)[::-1]
+
+# Add noise
+np.random.seed(0)
+b = A @ x + 0.0001 * np.random.normal(size=(order, ))
+
+# Using least squares solver:
+x_ls, _, _, _ = np.linalg.lstsq(A, b, rcond=None)
+# Using arls:
+x_arls = arls(A, b)
+
+```
+
+![example.png](example.png)
 
