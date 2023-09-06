@@ -135,7 +135,7 @@ a better choice.
 from math import sqrt
 import numpy as np
 from numpy import atleast_1d, atleast_2d
-from scipy.linalg.decomp import _asarray_validated
+from scipy._lib._util import _asarray_validated
 from scipy.linalg.misc import LinAlgError
 
 
