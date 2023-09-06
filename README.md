@@ -15,7 +15,7 @@ Please see the in-code comments for details of calls and returns, including exam
 
 Our primary solver is:
 
-    x = arls1(A, b)[0]
+    x = arls(A, b)[0]
 
 If you need to solve many systems with the same matrix, `A`, but different `b` vectors, use:
 

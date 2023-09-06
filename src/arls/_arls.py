@@ -68,9 +68,9 @@ whether manually or automatically.
 USAGE
 
 (1) Suppose you have a system of equations to solve, Ax=b.
-To use arls1(), A does not have to be square. It can be any shape.
+To use arls(), A does not have to be square. It can be any shape.
 Then you can get our automatically regularized solution with the call
-   x = arls1(A, b)[0]
+   x = arls(A, b)[0]
 Of course, if the system is well behaved, that is fine.
 The answer will then be the same as any good solver would produce.
 
@@ -81,7 +81,7 @@ like this:
 Then get the solution for Ax=b for a particular b by calling:
    x = arlsusv(A, b, U, S, Vt)[0]
 
-Note: Both arls1() and arlsusv() can also return several diagnostic parameters.
+Note: Both arls() and arlsusv() can also return several diagnostic parameters.
 Please see the extended comments for each solver in the code below.
 
 (3) A common requirement is for the elements of x to all be non-negative.
@@ -327,7 +327,7 @@ def arlsusv(A, b, U, S, Vt):
     Just compute the (expensive) SVD once, and use it as many times as
     you like with different b vectors.
 
-    Please see arls1() below for complete details.
+    Please see arls() below for complete details.
 
     Parameters
     ----------
@@ -344,7 +344,7 @@ def arlsusv(A, b, U, S, Vt):
     ur : int
         The Minimum Usable Rank.
         Note that "numerical rank" is an attribute of a matrix
-        but the "usable rank" that arls1() computes is an attribute
+        but the "usable rank" that arls() computes is an attribute
         of the problem, Ax=b.
     sigma : float
         The estimated right-hand-side root-mean-square error.
@@ -406,7 +406,7 @@ def arlsusv(A, b, U, S, Vt):
     return x, nr, ur, sigma, lambdah
 
 
-def arls1(A, b):
+def arls(A, b):
     """
     Solves the linear system of equation, Ax = b, for any shape matrix.
     The system can be underdetermined, square, or over-determined.
@@ -438,7 +438,7 @@ def arls1(A, b):
     ur : int
         The Minimum Usable Rank.
         Note that "numerical rank" is an attribute of a matrix
-        but the "usable rank" that arls1() computes is an attribute
+        but the "usable rank" that arls() computes is an attribute
         of the problem, Ax=b.
     sigma : float
         The estimated right-hand-side root-mean-square error.
@@ -457,7 +457,7 @@ def arls1(A, b):
     --------
     Arls1() will behave like any good least-squares solver when the system
     is well conditioned.
-    Here is a tiny example of an ill-conditioned system as handled by arls1(),
+    Here is a tiny example of an ill-conditioned system as handled by arls(),
 
        x + y = 2
        x + 1.01 y =3
@@ -469,7 +469,7 @@ def arls1(A, b):
     Then standard solvers will return:
        x = [-98. , 100.]
 
-    But arls1() will see the violation of the Picard Condition and return
+    But arls() will see the violation of the Picard Condition and return
        x = [1.12216 , 1.12779]
 
     Notes:
@@ -484,11 +484,11 @@ def arls1(A, b):
        limits, error estimates, variable bounds, condition number limits, etc.
        It also does not return any error flags as there are no error states.
        As long as the SVD converges (and SVD failure is remarkably rare)
-       then arls1() and other routines in this package will complete normally.
+       then arls() and other routines in this package will complete normally.
     5. Arls1()'s intent (and the intent of all routines in this module)
        is to find a reasonable solution even in the midst of excessive
        inaccuracy, ill-conditioning, singularities, duplicated data, etc.
-    6. In view of note 5, arls1() is not appropriate for situations
+    6. In view of note 5, arls() is not appropriate for situations
        where the requirements are more for high accuracy rather than
        robustness. So, we assume, in the coding, where needed, that no data
        needs to be considered more accurate than 8 significant figures.
@@ -656,7 +656,7 @@ def arlseq(A, b, E, f):
     projections onto every row of Ex=f subtracted from them.
     We will call this reduced set of equations A'x = b'.
     (Thus, the rows of A' will all be orthogonal to the rows of E.)
-    This reduced problem A'x = b', will then be solved with arls1().
+    This reduced problem A'x = b', will then be solved with arls().
     We will refer to the solution of this system as "xt".
 
     The final solution will be x = xe + xt.
@@ -705,7 +705,7 @@ def arlseq(A, b, E, f):
 
     Without using the equality constraint we are given here,
     standard solvers will return [x,y] = [-.3 , 2.8].
-    Even arls1() will return the same [x,y] = [-.3 , 2.8].
+    Even arls() will return the same [x,y] = [-.3 , 2.8].
     The residual for this solution is [0.0 , 0.0] (within roundoff).
     But of course x + y = 2.5, not the 3.0 we really want.
 
@@ -726,7 +726,7 @@ def arlseq(A, b, E, f):
 
     Notes:
     -----
-    See arls1() above for notes and references.
+    See arls() above for notes and references.
     """
     checkAb(A, b)
     m, n = A.shape
@@ -735,7 +735,7 @@ def arlseq(A, b, E, f):
     AA = A.copy()
     bb = b.copy()
     rnmax = find_max_row_norm(AA)
-    neglect = rnmax * 0.000000001  # see Note 6. for arls1()
+    neglect = rnmax * 0.000000001  # see Note 6. for arls()
 
     checkAb(E, f)
     EE = E.copy()
@@ -752,7 +752,7 @@ def arlseq(A, b, E, f):
     # final solution
     xe = np.transpose(EE) @ ff
     if AA.shape[0] > 0:
-        xt, _, _, _, _ = arls1(AA, bb)
+        xt, _, _, _, _ = arls(AA, bb)
         return xt + xe
     else:
         return xe
@@ -781,7 +781,7 @@ def arlsgt(A, b, G, h):
 
     Both Ax=b and Gx>=h can be underdetermined, square, or over-determined.
     Arguments b and h must be single columns.
-    Arlsgt() uses arls1(), above, as the core solver, and iteratively selects
+    Arlsgt() uses arls(), above, as the core solver, and iteratively selects
     rows of Gx>=h to move to a growing list of equality constraints, choosing
     first whatever equation in Gx>=h most violates its requirement.
 
@@ -866,7 +866,7 @@ def arlsgt(A, b, G, h):
     ne = 0
 
     # get initial solution... it might actually be right
-    x, nr, ur, sigma, lambdah = arls1(A, b)
+    x, nr, ur, sigma, lambdah = arls(A, b)
     nx = mynorm(x)
     if nx <= 0.0:
         return np.zeros(n)
@@ -905,7 +905,7 @@ def arlsgt(A, b, G, h):
 def arlsnn(A, b):
     """Computes a nonnegative solution of A*x = b.
 
-    Arlsnn() uses arls1(), above, as the core solver, and iteratively removes
+    Arlsnn() uses arls(), above, as the core solver, and iteratively removes
     variables that violate the nonnegativity constraint.
 
     Parameters
@@ -1004,7 +1004,7 @@ def arlsnn(A, b):
 def arlshape(A, b, nonneg, slope, curve):
     """
     ArlsShape() solves the linear system of equation, Ax = b, in the same
-    way as arls1(). But with ArlsShape the user can choose three different
+    way as arls(). But with ArlsShape the user can choose three different
     types of constraints on the shape of the solution.
     These constraints can be combined in any of 18 ways.
     The three types are:
@@ -1078,7 +1078,7 @@ def arlshape(A, b, nonneg, slope, curve):
     ):
         raise LinAlgError("Invalid constraint request in ArlsShape().")
     if nonneg == 0 and slope == 0 and curve == 0:
-        return arls1(A, b)[0]
+        return arls(A, b)[0]
 
     # compute the number of rows in G
     m, n = A.shape
@@ -1238,7 +1238,7 @@ def arlsall(A, b, E, f, G, h):
     AA = A.copy()
     bb = b.copy()
     rnmax = find_max_row_norm(A)
-    neglect = rnmax * 0.000000001  # see Note 6. for arls1()
+    neglect = rnmax * 0.000000001  # see Note 6. for arls()
 
     checkAb(E, f)
     me, ne = E.shape
