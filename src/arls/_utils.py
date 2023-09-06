@@ -39,7 +39,8 @@ def checkAb(A, b):
     if m == 0 or n == 0:
         raise LinAlgError("Matrix is empty.")
     if len(b) != m:
-        raise LinAlgError("Matrix and RHS do not have the same number of rows.")
+        raise LinAlgError(
+                "Matrix and RHS do not have the same number of rows.")
     A = np.atleast_2d(_asarray_validated(A, check_finite=True))
     b = np.atleast_1d(_asarray_validated(b, check_finite=True))
     return A, b
@@ -63,7 +64,7 @@ def decide_width(mg):
         if mg <= lim_mg:
             return width
     # Larger than the maximum
-    return 20    
+    return 20
 
 
 def decide_multiple(width):
@@ -106,7 +107,6 @@ def splita(g, mg):
         local = local + 0.40 * (sensitivity - local)
         urank = i + 1
     return urank
-
 
 
 def splitb(g, mg):
@@ -257,4 +257,3 @@ def get_worst(GG, hh, x):
                 p = i
                 worst = diff
     return p
-
