@@ -151,12 +151,8 @@ def checkAb(A, b):
     return
 
 
-def mynorm(x):
-    return np.sqrt(np.dot(x, x))
-
-
 def myrms(x):
-    return np.sqrt(np.dot(x, x)) / np.sqrt(len(x))
+    return np.linalg.norm(x) / np.sqrt(len(x))
 
 
 def decide_width(mg):
@@ -516,13 +512,7 @@ def arls(A, b):
 
 def find_max_row_norm(A):
     """ determine max row norm of A """
-    m = A.shape[0]
-    rnmax = 0.0
-    for i in range(0, m):
-        rn = mynorm(A[i, :])
-        if rn > rnmax:
-            rnmax = rn
-    return rnmax
+    return np.max(np.linalg.norm(A, axis=1))
 
 
 def find_max_sense(E, f):
@@ -532,7 +522,7 @@ def find_max_sense(E, f):
     ibest = 0  # default
     m = E.shape[0]
     for i in range(0, m):
-        rn = mynorm(E[i, :])
+        rn = np.linalg.norm(E[i, :])
         if rn > 0.0:
             s = abs(f[i]) / rn
             if s > snmax:
@@ -557,7 +547,7 @@ def prepeq(E, f, neglect):
             rnmax = -1.0
             imax = -1
             for k in range(i, m):
-                rn = mynorm(EE[k, :])
+                rn = np.linalg.norm(EE[k, :])
                 if rn > rnmax:
                     rnmax = rn
                     imax = k
@@ -565,7 +555,7 @@ def prepeq(E, f, neglect):
         ff[[i, imax]] = ff[[imax, i]]
 
         # normalize
-        rin = mynorm(EE[i, :])
+        rin = np.linalg.norm(EE[i, :])
         if rin > 0.0:
             EE[i, :] /= rin
             ff[i] /= rin
@@ -605,7 +595,7 @@ def arlspj(A, b, E, f, neglect):
             d = np.dot(AA[i, :], EE[j, :])
             AA[i, :] -= d * EE[j, :]
             bb[i] -= d * ff[j]
-        nm = mynorm(AA[i, :])
+        nm = np.linalg.norm(AA[i, :])
         if nm < neglect:
             AA = np.delete(AA, i, 0)
             bb = np.delete(bb, i, 0)
@@ -854,7 +844,7 @@ def arlsgt(A, b, G, h):
 
     # get initial solution... it might actually be right
     x = arls(A, b)
-    nx = mynorm(x)
+    nx = np.linalg.norm(x)
     if nx <= 0.0:
         return np.zeros(n)
 
