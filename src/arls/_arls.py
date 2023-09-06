@@ -455,7 +455,7 @@ def arls(A, b):
 
     Examples
     --------
-    Arls1() will behave like any good least-squares solver when the system
+    arls() will behave like any good least-squares solver when the system
     is well conditioned.
     Here is a tiny example of an ill-conditioned system as handled by arls(),
 
@@ -476,16 +476,16 @@ def arls(A, b):
     -----
     1. When the system is ill-conditioned, the process works best when the rows
        of A are scaled so that the elements of b have similar estimated errors.
-    2. Arls1() occasionally may produce a smoother (i.e., more regularized)
+    2. arls() occasionally may produce a smoother (i.e., more regularized)
        solution than desired. In this case please try scipy routine lsmr.
     3. With any linear equation solver, check that the solution is reasonable.
        In particular, you should check the residual vector, Ax - b.
-    4. Arls1() neither needs nor accepts optional parameters such as iteration
+    4. arls() neither needs nor accepts optional parameters such as iteration
        limits, error estimates, variable bounds, condition number limits, etc.
        It also does not return any error flags as there are no error states.
        As long as the SVD converges (and SVD failure is remarkably rare)
        then arls() and other routines in this package will complete normally.
-    5. Arls1()'s intent (and the intent of all routines in this module)
+    5. arls()'s intent (and the intent of all routines in this module)
        is to find a reasonable solution even in the midst of excessive
        inaccuracy, ill-conditioning, singularities, duplicated data, etc.
     6. In view of note 5, arls() is not appropriate for situations
