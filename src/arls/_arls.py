@@ -22,7 +22,6 @@ SOFTWARE.
 
 (MIT License)
 
-VERSION 1.0.2
 
 PURPOSE
 
@@ -132,7 +131,6 @@ Note: if you only need the solution to be nonnegative, arlsnn() is
 a better choice.
 """
 
-from math import sqrt
 import numpy as np
 from numpy import atleast_1d, atleast_2d
 from scipy._lib._util import _asarray_validated
@@ -154,11 +152,11 @@ def checkAb(A, b):
 
 
 def mynorm(x):
-    return sqrt(np.dot(x, x))
+    return np.sqrt(np.dot(x, x))
 
 
 def myrms(x):
-    return sqrt(np.dot(x, x)) / sqrt(len(x))
+    return np.sqrt(np.dot(x, x)) / np.sqrt(len(x))
 
 
 def decide_width(mg):
