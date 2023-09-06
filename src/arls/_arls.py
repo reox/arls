@@ -132,175 +132,17 @@ a better choice.
 """
 
 import numpy as np
-from numpy import atleast_1d, atleast_2d
-from scipy._lib._util import _asarray_validated
 from scipy.linalg.misc import LinAlgError
 
-
-def checkAb(A, b):
-    if len(A.shape) != 2:
-        raise LinAlgError("Input array should be 2-D.")
-    m, n = A.shape
-    if m == 0 or n == 0:
-        raise LinAlgError("Matrix is empty.")
-    if len(b) != m:
-        raise LinAlgError(
-            "Matrix and RHS do not have the same number of rows.")
-    A = atleast_2d(_asarray_validated(A, check_finite=True))
-    b = atleast_1d(_asarray_validated(b, check_finite=True))
-    return
-
-
-def myrms(x):
-    return np.linalg.norm(x) / np.sqrt(len(x))
-
-
-def decide_width(mg):
-    if mg < 3:
-        return 1
-    elif mg <= 8:
-        return 2  # 2 to 4 spans of 2
-    elif mg <= 12:
-        return 3  # 3 to 4 spans of 3
-    elif mg <= 20:
-        return 4  # 3 to 5 spans of 4
-    elif mg <= 28:
-        return 5  # 4 to 5 spans of 5
-    elif mg <= 36:
-        return 6  # 4 to 6 spans of 6
-    elif mg <= 50:
-        return 7  # 5 to 7 spans of 7
-    elif mg <= 64:
-        return 8  # 6 to 8 spans of 8
-    elif mg <= 80:
-        return 9  # 7 to 8 spans of 9
-    elif mg <= 200:
-        return 10  # 8 to 20 spans of 10
-    elif mg <= 300:
-        return 12  # 16 to 24 spans of 12
-    elif mg <= 400:
-        return 14  # 21 to 28 spans of 14
-    elif mg <= 1000:
-        return 16  # 25 to 60 spans of 16
-    else:
-        return 20  # 50 to ?? spans of 20
-
-
-def decide_multiple(width):
-    if width < 3:
-        return 30.0
-    elif width <= 10:
-        return 20.0
-    elif width <= 20:
-        return 15.0
-    else:
-        return 7.0
-
-
-def splita(g, mg):
-    """ Determines a usable rank based on large rise in Picard Vector"""
-    # initialize
-    if mg < 2:
-        return mg
-    w = decide_width(mg)
-    sensitivity = g[0]
-    small = sensitivity
-    local = sensitivity
-    urank = 1
-    for i in range(1, mg):
-        sensitivity = g[i]
-        if i >= w and sensitivity > 25.0 * small and sensitivity > local:
-            break
-        if sensitivity < small:
-            small = small + 0.40 * (sensitivity - small)
-        else:
-            small = small + 0.10 * (sensitivity - small)
-        local = local + 0.40 * (sensitivity - local)
-        urank = i + 1
-    return urank
-
-
-def compute_mov_sums(g, mg, w):
-    numsums = mg - w + 1
-    sums = np.zeros(numsums)
-    for i in range(0, numsums):
-        s = 0.0
-        for j in range(i, i + w):
-            s += g[j]
-        sums[i] = s
-    return sums
-
-
-def splitb(g, mg):
-    """Determines a usable rank based on modest rise in Picard Vector
-    after the low point in the PCV."""
-    w = decide_width(mg)
-    if w < 2:
-        return mg  # splitb needs w>=2 to be reliable
-
-    # magnify any divergence by squaring
-    gg = np.zeros(mg)
-    for i in range(0, mg):
-        gg[i] = g[i] * g[i]
-
-    # ignore dropouts
-    for i in range(1, mg - 1):
-        if gg[i] < 0.2 * gg[i - 1] and gg[i] < 0.2 * gg[i + 1]:
-            gg[i] = 0.5 * min(gg[i - 1], gg[i + 1])
-
-    # choose breakpoint as multiple of lowest moving average
-    sums = compute_mov_sums(gg, mg, w)
-    ilow = np.where(sums == min(sums))[0][0]
-    # bad = 20.0 * sums[ilow]
-    multi = decide_multiple(w)
-    bad = multi * sums[ilow]
-
-    # look for unexpected rise
-    ibad = 0
-    for i in range(ilow + 1, mg - w + 1):
-        if sums[i] > bad:
-            ibad = i
-            break
-    if ibad <= 0:
-        urank = mg  # leave urank alone
-    else:
-        urank = ibad + w - 1
-
-    return urank
-
-
-def rmslambdah(A, b, U, S, Vt, ur, lamb):
-    """Computes a regularized solution to Ax=b, given the usable rank
-    and the Tikhonov lambda value."""
-    mn = S.shape[0]
-    ps = np.zeros(mn)
-    for i in range(0, ur):
-        ps[i] = 1.0 / (S[i] + lamb ** 2 / S[i]) if S[i] > 0.0 else 0.0
-    for i in range(ur, mn):
-        ps[i] = 0.0
-    # best to do multiplies from right end....
-    xa = np.transpose(Vt) @ (np.diag(ps) @ (np.transpose(U) @ b))
-    res = b - A @ xa
-    r = myrms(res)
-    return xa, r
-
-
-def discrep(A, b, U, S, Vt, ur, mysigma):
-    """ Computes Tikhonov's lambda using b's estimated RMS error, mysigma"""
-    lo = 0.0  # for minimum achievable residual
-    hi = 0.33 * float(S[0])  # for ridiculously large residual
-    lamb = 0.0
-    # bisect until we get the residual we want...but quit eventually
-    for k in range(0, 50):
-        lamb = (lo + hi) * 0.5
-        xa, check = rmslambdah(A, b, U, S, Vt, ur, lamb)
-        if abs(check - mysigma) < 0.0000001 * mysigma:
-            break  # close enough!
-        if check > mysigma:
-            hi = lamb
-        else:
-            lo = lamb
-    return lamb
+from ._utils import (
+        checkAb,
+        splita,
+        splitb,
+        rmslambdah,
+        discrep,
+        prepeq,
+        get_worst,
+        )
 
 
 def arlsusv(A, b, U, S, Vt):
@@ -353,7 +195,7 @@ def arlsusv(A, b, U, S, Vt):
         If A and b do not have the same row size.
         If SCIPY's SVD() does not converge.
     """
-    checkAb(A, b)
+    A, b = checkAb(A, b)
     m, n = A.shape
     mn = min(m, n)
     if np.count_nonzero(A) == 0 or np.count_nonzero(b) == 0:
@@ -392,7 +234,7 @@ def arlsusv(A, b, U, S, Vt):
     else:
         # from ur, determine sigma
         Utb = np.transpose(U) @ b
-        sigma = myrms(Utb[ur:mn])
+        sigma = np.sqrt(np.mean(Utb[ur:mn]**2))
         # from sigma, determine lambda
         lambdah = discrep(A, b, U, S, Vt, ur, sigma)
         # from lambda, determine solution
@@ -505,80 +347,9 @@ def arls(A, b):
     Rondall E. Jones, Ph.D.
     rejones7@msn.com
     """
-    A = atleast_2d(_asarray_validated(A, check_finite=True))
+    A, b = checkAb(A, b)
     U, S, Vt = np.linalg.svd(A, full_matrices=False)
     return arlsusv(A, b, U, S, Vt)[0]
-
-
-def find_max_row_norm(A):
-    """ determine max row norm of A """
-    return np.max(np.linalg.norm(A, axis=1))
-
-
-def find_max_sense(E, f):
-    """find the row of Ex=f which his the highest ratio of f[i]
-    to the norm of the row."""
-    snmax = -1.0
-    ibest = 0  # default
-    m = E.shape[0]
-    for i in range(0, m):
-        rn = np.linalg.norm(E[i, :])
-        if rn > 0.0:
-            s = abs(f[i]) / rn
-            if s > snmax:
-                snmax = s
-                ibest = i
-    return ibest
-
-
-def prepeq(E, f, neglect):
-    """a utility routine for arlseq() below that prepares the equality
-    constraints for use"""
-    E = atleast_2d(_asarray_validated(E, check_finite=True))
-    f = atleast_1d(_asarray_validated(f, check_finite=True))
-    EE = E.copy()
-    ff = f.copy()
-    m, n = EE.shape
-    for i in range(0, m):
-        # determine new best row and put it next
-        if i == 0:
-            imax = find_max_sense(EE, ff)
-        else:
-            rnmax = -1.0
-            imax = -1
-            for k in range(i, m):
-                rn = np.linalg.norm(EE[k, :])
-                if rn > rnmax:
-                    rnmax = rn
-                    imax = k
-        EE[[i, imax], :] = EE[[imax, i], :]
-        ff[[i, imax]] = ff[[imax, i]]
-
-        # normalize
-        rin = np.linalg.norm(EE[i, :])
-        if rin > 0.0:
-            EE[i, :] /= rin
-            ff[i] /= rin
-        else:
-            ff[i] = 0.0
-
-        # subtract projections onto EE[i,:]
-        for k in range(i + 1, m):
-            d = np.dot(EE[k, :], EE[i, :])
-            EE[k, :] -= d * EE[i, :]
-            ff[k] -= d * ff[i]
-
-    # reject ill-conditioned rows
-    if m > 2:
-        g = np.zeros(m)
-        for k in range(0, m):
-            g[k] = abs(ff[k])
-        m1 = splita(g, m)
-        mm = splitb(g, m1)
-        if mm < m:
-            EE = np.resize(EE, (mm, n))
-            ff = np.resize(ff, mm)
-    return EE, ff
 
 
 def arlspj(A, b, E, f, neglect):
@@ -705,16 +476,16 @@ def arlseq(A, b, E, f):
     -----
     See arls() above for notes and references.
     """
-    checkAb(A, b)
+    A, b = checkAb(A, b)
     m, n = A.shape
     if np.count_nonzero(A) == 0 or np.count_nonzero(b) == 0:
         return np.zeros(n)
     AA = A.copy()
     bb = b.copy()
-    rnmax = find_max_row_norm(AA)
+    rnmax = np.max(np.linalg.norm(AA, axis=1))
     neglect = rnmax * 0.000000001  # see Note 6. for arls()
 
-    checkAb(E, f)
+    E, f = checkAb(E, f)
     EE = E.copy()
     ff = f.copy()
     me, ne = EE.shape
@@ -733,21 +504,6 @@ def arlseq(A, b, E, f):
         return xt + xe
     else:
         return xe
-
-
-def get_worst(GG, hh, x):
-    # assess state of inequalities
-    p = -1
-    mg = GG.shape[0]
-    rhs = GG @ x
-    worst = 0.0
-    for i in range(0, mg):
-        if rhs[i] < hh[i]:
-            diff = hh[i] - rhs[i]
-            if p < 0 or diff > worst:
-                p = i
-                worst = diff
-    return p
 
 
 def arlsgt(A, b, G, h):
@@ -824,12 +580,12 @@ def arlsgt(A, b, G, h):
        norm(res) = 0.141
     which is significantly larger.
     """
-    checkAb(A, b)
+    A, b = checkAb(A, b)
     m, n = A.shape
     if np.count_nonzero(A) == 0 or np.count_nonzero(b) == 0:
         return np.zeros(n)
 
-    checkAb(G, h)
+    G, h = checkAb(G, h)
     mg, ng = G.shape
     if n != ng:
         raise LinAlgError(
@@ -920,7 +676,7 @@ def arlsnn(A, b):
     As is expected, this result has a non-zero residual,
     which is [0.02, 0., -0.04]. This is to be expected.
     """
-    checkAb(A, b)
+    A, b = checkAb(A, b)
     m, n = A.shape
     if np.count_nonzero(A) == 0 or np.count_nonzero(b) == 0:
         return np.zeros(n)
@@ -1041,7 +797,7 @@ def arlshape(A, b, nonneg, slope, curve):
     the two values of 1.9877.
     The norm of the residual for this solution is, amazingly, only 1.0e-7.
     """
-    checkAb(A, b)
+    A, b = checkAb(A, b)
     m, n = A.shape
     if np.count_nonzero(A) == 0 or np.count_nonzero(b) == 0:
         return np.zeros(n)
@@ -1208,21 +964,21 @@ def arlsall(A, b, E, f, G, h):
     But it would be a mistake to accept an answer that does not meet
     the facts that we know the solution must satisfy.
     """
-    checkAb(A, b)
+    A, b = checkAb(A, b)
     m, n = A.shape
     if np.count_nonzero(A) == 0 or np.count_nonzero(b) == 0:
         return np.zeros(n)
     AA = A.copy()
     bb = b.copy()
-    rnmax = find_max_row_norm(A)
+    rnmax = np.max(np.linalg.norm(A, axis=1))
     neglect = rnmax * 0.000000001  # see Note 6. for arls()
 
-    checkAb(E, f)
+    E, f = checkAb(E, f)
     me, ne = E.shape
     EE = E.copy()
     ff = f.copy()
 
-    checkAb(G, h)
+    G, h = checkAb(G, h)
     mg, ng = G.shape
     GG = G.copy()
     hh = h.copy()
