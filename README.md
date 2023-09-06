@@ -112,6 +112,9 @@ x_arls = arls(A, b)
 
 ![example.png](example.png)
 
+It can clearly be noticed, that the standard least squares solver starts to oscillate and the coefficients are actually around 10000 times larger than expected.
+ARLS however, can find a very good solution, close to the ideal solution that is desired (of course, it cannot give the exact same solution, as we have added noise!).
+
 
 ## Origin of the code and Matlab version
 
