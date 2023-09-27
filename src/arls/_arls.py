@@ -35,7 +35,7 @@ from ._utils import (
         )
 
 
-def arlsusv(A, b, U, S, Vt):
+def arlsusv(A, b, U=None, S=None, Vt=None):
     """
     Solves the linear system of equation, Ax = b, for any shape matrix.
     The system can be underdetermined, square, or over-determined.
@@ -47,6 +47,8 @@ def arlsusv(A, b, U, S, Vt):
     U, S and Vt constitute the Singular Value Decomposition of A
     which can be computed like this:
         U, S, Vt = np.linalg.svd(A, full_matrices=False)
+
+    If any of the three variables is not given, all are calculated from A and b.
 
     The purpose of this routine is to allow you to quickly solve many
     systems of equations which use the SAME MATRIX A.
@@ -61,6 +63,12 @@ def arlsusv(A, b, U, S, Vt):
         Coefficient matrix
     b : (m) array_like
         Column of dependent variables.
+    U : (m, m) array_like
+        Unitary array from SVD
+    S : (n) array_like
+        Singular values from SVD
+    Vt: (m, m) array_like
+        Unitary array from SVD
 
     Returns
     -------
@@ -86,6 +94,11 @@ def arlsusv(A, b, U, S, Vt):
         If SCIPY's SVD() does not converge.
     """
     A, b = checkAb(A, b)
+
+    if U is None or S is None or Vt is None:
+        # Calculate from A and b
+        U, S, Vt = np.linalg.svd(A, full_matrices=False)
+
     m, n = A.shape
     mn = min(m, n)
     if np.count_nonzero(A) == 0 or np.count_nonzero(b) == 0:
@@ -95,8 +108,6 @@ def arlsusv(A, b, U, S, Vt):
     beta = np.transpose(U) @ b
     k = 0
     g = np.zeros(mn)
-    sense = 0.0
-    si = 0.0
     cond = max(A.shape) * np.spacing(A.real.dtype.type(1))
     eps = S[0] * cond
     for i in range(0, mn):
@@ -237,9 +248,7 @@ def arls(A, b):
     Rondall E. Jones, Ph.D.
     rejones7@msn.com
     """
-    A, b = checkAb(A, b)
-    U, S, Vt = np.linalg.svd(A, full_matrices=False)
-    return arlsusv(A, b, U, S, Vt)[0]
+    return arlsusv(A, b)[0]
 
 
 def arlseq(A, b, E, f):
@@ -557,9 +566,7 @@ def arlsnn(A, b):
     # for SVD speed and stability,
     # rather than just zero out columns.
     C = A.copy()
-    cols = [0] * n  # list of active column numbers
-    for i in range(1, n):
-        cols[i] = i
+    cols = list(range(n))  # list of active column numbers
     nn = n
     for i in range(1, nn):
         # choose a column to zero
